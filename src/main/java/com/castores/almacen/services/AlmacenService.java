@@ -1,6 +1,6 @@
 package com.castores.almacen.services;
 
-import com.castores.almacen.models.HistoricoMovimiento;
+import com.castores.almacen.models.HistoricoMovimientoDetalle;
 import com.castores.almacen.models.Producto;
 import com.castores.almacen.repositories.HistoricoMovimientoRepository;
 import com.castores.almacen.repositories.ProductoRepository;
@@ -66,11 +66,11 @@ public class AlmacenService {
         }
     }
 
-    public List<HistoricoMovimiento> obtenerHistorial() {
+    public List<HistoricoMovimientoDetalle> obtenerHistorial() {
         return historicoRepository.findAll();
     }
 
-    public List<HistoricoMovimiento> filtrarHistorial(String tipo) {
+    public List<HistoricoMovimientoDetalle> filtrarHistorial(String tipo) {
         if (tipo == null || tipo.isEmpty() || tipo.equals("TODOS")) {
             return historicoRepository.findAll();
         }

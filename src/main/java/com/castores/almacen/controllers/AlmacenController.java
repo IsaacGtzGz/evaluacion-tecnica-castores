@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AlmacenController {
@@ -24,60 +25,90 @@ public class AlmacenController {
 
         if (user.getIdRol() == 1) {
             model.addAttribute("productos", almacenService.obtenerTodosProductos());
+            model.addAttribute("mostrarAcciones", true);
+            model.addAttribute("esModuloSalida", false);
+            model.addAttribute("tituloModulo", "Catálogo de Productos");
         } else {
             model.addAttribute("productos", almacenService.obtenerProductosActivos());
+            model.addAttribute("mostrarAcciones", false);
+            model.addAttribute("esModuloSalida", false);
+            model.addAttribute("tituloModulo", "Catálogo de Productos");
         }
         model.addAttribute("usuario", user);
         return "inventario";
     }
 
+    @GetMapping("/salida")
+    public String verSalida(HttpSession session, Model model) {
+        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
+        if (user == null || user.getIdRol() != 2)
+            return "redirect:/inventario";
+
+        model.addAttribute("productos", almacenService.obtenerProductosActivos());
+        model.addAttribute("usuario", user);
+        model.addAttribute("mostrarAcciones", true);
+        model.addAttribute("esModuloSalida", true);
+        model.addAttribute("tituloModulo", "Salida de Productos");
+        return "inventario";
+    }
+
     @PostMapping("/producto/agregar")
-    public String agregarProducto(@RequestParam String nombre, HttpSession session) {
+    public String agregarProducto(@RequestParam String nombre, HttpSession session,
+            RedirectAttributes redirectAttributes) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null || user.getIdRol() != 1)
             return "redirect:/inventario";
 
-        almacenService.registrarProducto(nombre);
+        try {
+            almacenService.registrarProducto(nombre);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMensaje", "Error al registrar: " + e.getMessage());
+        }
         return "redirect:/inventario";
     }
 
     @PostMapping("/producto/entrada")
     public String entradaInventario(@RequestParam Integer idProducto, @RequestParam Integer cantidad,
-            HttpSession session) {
+            HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null || user.getIdRol() != 1)
             return "redirect:/inventario";
 
         try {
             almacenService.entradaProducto(idProducto, cantidad, user.getIdUsuario());
-        } catch (IllegalArgumentException e) {
-            session.setAttribute("errorMensaje", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMensaje", e.getMessage());
         }
         return "redirect:/inventario";
     }
 
     @PostMapping("/producto/salida")
     public String salidaInventario(@RequestParam Integer idProducto, @RequestParam Integer cantidad,
-            HttpSession session) {
+            HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null || user.getIdRol() != 2)
             return "redirect:/inventario";
 
         try {
             almacenService.salidaProducto(idProducto, cantidad, user.getIdUsuario());
-        } catch (IllegalArgumentException e) {
-            session.setAttribute("errorMensaje", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMensaje", e.getMessage());
         }
-        return "redirect:/inventario";
+        return "redirect:/salida";
     }
 
     @PostMapping("/producto/estatus")
-    public String cambiarEstatus(@RequestParam Integer idProducto, @RequestParam Integer estatus, HttpSession session) {
+    public String cambiarEstatus(@RequestParam Integer idProducto, @RequestParam Integer estatus, HttpSession session,
+            RedirectAttributes redirectAttributes) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null || user.getIdRol() != 1)
             return "redirect:/inventario";
 
-        almacenService.cambiarEstatusProducto(idProducto, estatus);
+        try {
+            almacenService.cambiarEstatusProducto(idProducto, estatus);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMensaje", e.getMessage());
+        }
         return "redirect:/inventario";
     }
 

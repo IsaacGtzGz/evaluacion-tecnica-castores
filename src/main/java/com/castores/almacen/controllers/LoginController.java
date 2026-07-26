@@ -19,7 +19,11 @@ public class LoginController {
     }
 
     @GetMapping("/")
-    public String loginPage() {
+    public String loginPage(HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null) {
+            return usuario.getIdRol() == 2 ? "redirect:/salida" : "redirect:/inventario";
+        }
         return "login";
     }
 
@@ -29,9 +33,9 @@ public class LoginController {
         Usuario usuario = usuarioService.login(correo, contrasena);
         if (usuario != null) {
             session.setAttribute("usuarioLogueado", usuario);
-            return "redirect:/inventario";
+            return usuario.getIdRol() == 2 ? "redirect:/salida" : "redirect:/inventario";
         }
-        model.addAttribute("error", "Credenciales incorrectas o usuario inactivo.");
+        model.addAttribute("error", "Correo o contraseña incorrectos, o usuario inactivo.");
         return "login";
     }
 
