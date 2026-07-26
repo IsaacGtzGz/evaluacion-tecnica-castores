@@ -4,7 +4,6 @@ import com.castores.almacen.models.HistoricoMovimiento;
 import com.castores.almacen.models.Producto;
 import com.castores.almacen.repositories.HistoricoMovimientoRepository;
 import com.castores.almacen.repositories.ProductoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -12,11 +11,13 @@ import java.util.Optional;
 @Service
 public class AlmacenService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
+    private final ProductoRepository productoRepository;
+    private final HistoricoMovimientoRepository historicoRepository;
 
-    @Autowired
-    private HistoricoMovimientoRepository historicoRepository;
+    public AlmacenService(ProductoRepository productoRepository, HistoricoMovimientoRepository historicoRepository) {
+        this.productoRepository = productoRepository;
+        this.historicoRepository = historicoRepository;
+    }
 
     public List<Producto> obtenerTodosProductos() {
         return productoRepository.findAll();
@@ -38,19 +39,7 @@ public class AlmacenService {
         if (cantidadAgregar <= 0) {
             throw new IllegalArgumentException("Error: No puedes disminuir o poner 0 en la entrada de inventario.");
         }
-        Optional<Producto> prodOpt = productoRepository.findById(idProducto);
-        if (prodOpt.isPresent()) {
-            Producto prod = prodOpt.get();
-            prod.setCantidad(prod.getCantidad() + cantidadAgregar);
-            productoRepository.save(prod);
-
-            HistoricoMovimiento hist = new HistoricoMovimiento();
-            hist.setIdProducto(idProducto);
-            hist.setIdUsuario(idUsuario);
-            hist.setTipoMovimiento("ENTRADA");
-            hist.setCantidad(cantidadAgregar);
-            historicoRepository.save(hist);
-        }
+        productoRepository.ejecutarMovimiento(idProducto, cantidadAgregar, "ENTRADA", idUsuario);
     }
 
     public void salidaProducto(Integer idProducto, Integer cantidadSacar, Integer idUsuario) {
@@ -64,15 +53,7 @@ public class AlmacenService {
                 throw new IllegalArgumentException(
                         "Error: No se puede sacar una cantidad mayor a la del inventario actual.");
             }
-            prod.setCantidad(prod.getCantidad() - cantidadSacar);
-            productoRepository.save(prod);
-
-            HistoricoMovimiento hist = new HistoricoMovimiento();
-            hist.setIdProducto(idProducto);
-            hist.setIdUsuario(idUsuario);
-            hist.setTipoMovimiento("SALIDA");
-            hist.setCantidad(cantidadSacar);
-            historicoRepository.save(hist);
+            productoRepository.ejecutarMovimiento(idProducto, cantidadSacar, "SALIDA", idUsuario);
         }
     }
 

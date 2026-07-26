@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario - Almacén Castores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+        <div>
+            <span class="font-bold text-lg">Almacén Castores</span>
+            <span class="ml-4 text-sm bg-blue-800 px-3 py-1 rounded"
+                th:text="'Rol: ' + (${usuario.idRol == 1} ? 'Administrador' : 'Almacenista')"></span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a th:if="${usuario.idRol == 1}" href="/historico"
+                class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm transition">
+                Ver Histórico
+            </a>
+            <span th:text="${usuario.nombre}" class="text-sm font-medium"></span>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-sm transition">Salir</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <div th:if="${session.errorMensaje}" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 shadow">
+            <p th:text="${session.errorMensaje}"></p>
+            <th:block th:text="${#session.removeAttribute('errorMensaje')}"></th:block>
+        </div>
+
+        <div th:if="${usuario.idRol == 1}" class="bg-white p-6 rounded-lg shadow mb-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Agregar Nuevo Producto</h2>
+            <form action="/producto/agregar" method="post" class="flex gap-4">
+                <input type="text" name="nombre" placeholder="Nombre del producto" required
+                    class="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2 rounded transition">
+                    + Registrar Producto
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b bg-gray-50">
+                <h2 class="font-bold text-gray-700">Catálogo de Inventario</h2>
+            </div>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 text-sm">
+                        <th class="p-4">ID</th>
+                        <th class="p-4">Producto</th>
+                        <th class="p-4">Existencias</th>
+                        <th th:if="${usuario.idRol == 1}" class="p-4">Estatus</th>
+                        <th class="p-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    <tr th:each="prod : ${productos}">
+                        <td class="p-4 font-bold" th:text="${prod.idProducto}"></td>
+                        <td class="p-4" th:text="${prod.nombre}"></td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 rounded font-bold"
+                                th:classappend="${prod.cantidad > 0} ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                                th:text="${prod.cantidad}"></span>
+                        </td>
+                        <td th:if="${usuario.idRol == 1}" class="p-4">
+                            <span th:text="${prod.estatus == 1} ? 'Activo' : 'Inactivo'"
+                                th:class="${prod.estatus == 1} ? 'text-green-600 font-bold' : 'text-red-500 font-bold'"></span>
+                        </td>
+                        <td class="p-4 flex gap-2">
+                            <form th:if="${usuario.idRol == 1 and prod.estatus == 1}" action="/producto/entrada"
+                                method="post" class="flex gap-1">
+                                <input type="hidden" name="idProducto" th:value="${prod.idProducto}">
+                                <input type="number" name="cantidad" min="1" placeholder="Cant." required
+                                    class="w-20 px-2 py-1 border rounded text-xs">
+                                <button type="submit"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-bold">+
+                                    Entrada</button>
+                            </form>
+
+                            <form th:if="${usuario.idRol == 2}" action="/producto/salida" method="post"
+                                class="flex gap-1">
+                                <input type="hidden" name="idProducto" th:value="${prod.idProducto}">
+                                <input type="number" name="cantidad" min="1" placeholder="Cant." required
+                                    class="w-20 px-2 py-1 border rounded text-xs">
+                                <button type="submit"
+                                    class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-xs font-bold">-
+                                    Salida</button>
+                            </form>
+
+                            <form th:if="${usuario.idRol == 1}" action="/producto/estatus" method="post">
+                                <input type="hidden" name="idProducto" th:value="${prod.idProducto}">
+                                <input type="hidden" name="estatus" th:value="${prod.estatus == 1 ? 0 : 1}">
+                                <button type="submit" th:text="${prod.estatus == 1 ? 'Dar de Baja' : 'Reactivar'}"
+                                    th:class="${prod.estatus == 1 ? 'bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs' : 'bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs'}"></button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

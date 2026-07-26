@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico de Movimientos - Almacén Castores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
+        <div>
+            <span class="font-bold text-lg">Almacén Castores - Histórico</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <a href="/inventario" class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded text-sm transition">
+                Volver a Inventario
+            </a>
+            <span data-th-text="${usuario.nombre}" class="text-sm font-medium"></span>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-sm transition">Salir</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <div class="bg-white p-4 rounded-lg shadow mb-6 flex justify-between items-center">
+            <span class="font-bold text-gray-700">Filtrar por Tipo de Movimiento:</span>
+            <div class="flex gap-2">
+                <a href="/historico?filtro=TODOS"
+                    data-th-class="${filtroActual == 'TODOS'} ? 'bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold' : 'bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm'">Todos</a>
+                <a href="/historico?filtro=ENTRADA"
+                    data-th-class="${filtroActual == 'ENTRADA'} ? 'bg-green-600 text-white px-4 py-2 rounded text-sm font-bold' : 'bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm'">Entradas</a>
+                <a href="/historico?filtro=SALIDA"
+                    data-th-class="${filtroActual == 'SALIDA'} ? 'bg-orange-600 text-white px-4 py-2 rounded text-sm font-bold' : 'bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm'">Salidas</a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 text-sm">
+                        <th class="p-4">Folio</th>
+                        <th class="p-4">ID Producto</th>
+                        <th class="p-4">ID Usuario</th>
+                        <th class="p-4">Tipo</th>
+                        <th class="p-4">Cantidad</th>
+                        <th class="p-4">Fecha y Hora</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    <tr data-th-each="mov : ${movimientos}">
+                        <td class="p-4 font-bold" data-th-text="${mov.idMovimiento}"></td>
+                        <td class="p-4" data-th-text="${mov.idProducto}"></td>
+                        <td class="p-4" data-th-text="${mov.idUsuario}"></td>
+                        <td class="p-4">
+                            <span data-th-text="${mov.tipoMovimiento}"
+                                data-th-class="${mov.tipoMovimiento == 'ENTRADA'} ? 'bg-green-100 text-green-800 px-2 py-1 rounded font-bold text-xs' : 'bg-orange-100 text-orange-800 px-2 py-1 rounded font-bold text-xs'"></span>
+                        </td>
+                        <td class="p-4 font-bold" data-th-text="${mov.cantidad}"></td>
+                        <td class="p-4 text-gray-500"
+                            data-th-text="${#temporals.format(mov.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
